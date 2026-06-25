@@ -1,0 +1,343 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Bento portfolio — warm paper, confident color, Inter everywhere.
+--------------------------------------------------------------------------- */
+:root {
+  --bg: #ffffff;
+  --ink: #1b1a17;
+  --muted: #74716a;
+
+  --card-yellow: #f7ce5b;
+  --card-yellow-ink: #4a3a08;
+  --card-sage: #c5cf8e;
+  --card-sage-ink: #2c4a2e;
+  --marker: #e9fa6d;
+  --card-blue: #0a66c2;
+  --card-neutral: #e8e6e0;
+  --card-coral: #ee7d50;
+  --card-coral-ink: #5b220c;
+  --card-lavender: #c8b9f1;
+  --card-lavender-ink: #3c2d6e;
+
+  --accent: #236626;
+  --accent-soft: #e7efe8;
+
+  --r-card: 26px;
+  --r-inner: 16px;
+
+  --shadow-card: 0 1px 2px rgba(27, 26, 23, 0.04);
+  --shadow-lift: 0 14px 32px rgba(27, 26, 23, 0.1);
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--marker);
+  color: var(--ink);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Bento grid
+--------------------------------------------------------------------------- */
+.bento {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: 1fr;
+}
+
+/* Tablet — two columns */
+@media (min-width: 700px) {
+  .bento {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "profile tagline"
+      "profile linkedin"
+      "profile beyond"
+      "resume scroll";
+  }
+  .area-profile { grid-area: profile; }
+  .area-tagline { grid-area: tagline; }
+  .area-linkedin { grid-area: linkedin; }
+  .area-beyond { grid-area: beyond; }
+  .area-resume { grid-area: resume; }
+  .area-scroll { grid-area: scroll; }
+}
+
+/* Desktop — the wireframe arrangement, filling the first viewport */
+@media (min-width: 1024px) {
+  .bento {
+    gap: 22px;
+    /* 24px above and below — bento sits dead-center in the first viewport */
+    height: calc(100vh - 48px);
+    min-height: 700px;
+    max-height: 1160px;
+    /* col 3 trimmed, col 4 widened: purple gets room, resume gives it up,
+       beyond-work (cols 3+4) stays the same width */
+    grid-template-columns: 1.18fr 0.92fr 0.34fr 0.62fr;
+    grid-template-rows: 1.06fr 1fr 1fr;
+    grid-template-areas:
+      "profile tagline tagline tagline"
+      "profile linkedin beyond beyond"
+      "profile resume resume scroll";
+  }
+}
+
+.card {
+  position: relative;
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+a.card:hover,
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lift);
+}
+
+/* Project card reveal — CSS-driven so it plays exactly once (the latched
+   `is-in` class never comes off, so it can never replay on scroll-back). */
+.proj-card {
+  opacity: 0;
+  transform: translateY(16px) scale(0.96);
+  transition:
+    opacity 0.6s var(--ease-out),
+    transform 0.6s var(--ease-out);
+  will-change: opacity, transform;
+}
+.proj-card.is-in {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .proj-card {
+    transform: none;
+    transition: opacity 0.3s ease;
+  }
+}
+
+/* Highlighter stroke — a real marker sweep, not a tidy pill */
+.marker {
+  position: relative;
+  isolation: isolate; /* keep the highlight's z-index local, behind the text */
+  display: inline-block;
+  padding: 0 0.16em;
+  border-radius: 0;
+  transform: rotate(-0.4deg);
+}
+
+/* the highlight lives on a pseudo-element behind the text, so the text stays
+   fully visible while the swipe reveals */
+.marker::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--marker);
+  transform-origin: left center;
+}
+
+/* first-load only: soft left→right marker swipe, timed to begin just after the
+   hanging badge's swing fully settles (~3.7s in). Runs once, no loop. */
+.marker-reveal::before {
+  animation: marker-reveal 1s cubic-bezier(0.22, 1, 0.36, 1) 3.8s both;
+}
+
+@keyframes marker-reveal {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* reduced motion: highlight is simply present, no swipe */
+  .marker-reveal::before {
+    animation: none;
+  }
+}
+
+/* External-link arrow chip */
+.arrow-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+a:hover .arrow-chip {
+  transform: translate(2px, -2px);
+}
+
+/* Mini resume document */
+.resume-doc {
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(60, 22, 5, 0.22);
+  padding: 16px 18px;
+  width: 240px;
+  color: #2a2723;
+  transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out);
+  will-change: transform;
+}
+
+.resume-doc h4 {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.resume-doc .doc-meta {
+  font-size: 5.5px;
+  color: #6c675f;
+  margin-top: 2px;
+}
+
+.resume-doc .doc-h {
+  font-size: 6px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-top: 7px;
+  border-bottom: 0.5px solid #d8d4cc;
+  padding-bottom: 2px;
+}
+
+.resume-doc .doc-line {
+  font-size: 5.5px;
+  line-height: 1.5;
+  margin-top: 3px;
+  color: #4a463f;
+}
+
+@media (min-width: 1024px) {
+  .resume-doc {
+    width: 272px;
+  }
+  .resume-doc h4 { font-size: 10px; }
+  .resume-doc .doc-meta { font-size: 6px; }
+  .resume-doc .doc-h { font-size: 6.5px; }
+  .resume-doc .doc-line { font-size: 6px; }
+}
+
+/* ---------------------------------------------------------------------------
+   Manila folder — the resume lives inside it and slides out on hover
+--------------------------------------------------------------------------- */
+.folder {
+  position: relative;
+  width: 272px;
+  height: 100%;
+  min-height: 192px;
+  flex-shrink: 0;
+}
+
+@media (min-width: 1024px) {
+  .folder {
+    width: 308px;
+  }
+}
+
+/* leather grain — soft-light noise over the brown so it reads as hide, not plastic */
+.folder-back,
+.folder-front {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='l'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23l)' opacity='0.5'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+  background-blend-mode: soft-light;
+}
+
+/* back wall of the folder, with the classic tab */
+.folder-back {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 118px;
+  background-color: #3e2a1c;
+  border-radius: 12px 12px 14px 14px;
+}
+
+.folder-back::before {
+  content: "";
+  position: absolute;
+  top: -16px;
+  left: 16px;
+  width: 96px;
+  height: 20px;
+  background: #3e2a1c;
+  border-radius: 8px 8px 0 0;
+}
+
+/* the paper, tucked in */
+.folder .resume-doc {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%) rotate(1.2deg);
+  box-shadow: 0 6px 16px rgba(60, 22, 5, 0.18);
+}
+
+/* front pocket — covers the lower part of the paper */
+.folder-front {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 100px;
+  background-color: #54392a;
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='l'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23l)' opacity='0.5'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, #5e4130 0%, #462e1f 100%);
+  border-radius: 12px 12px 14px 14px;
+  box-shadow:
+    0 -4px 12px rgba(34, 18, 8, 0.3),
+    inset 0 1px 0 rgba(255, 235, 205, 0.12);
+}
+
+/* stitching along the pocket edge */
+.folder-front::after {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1.5px dashed rgba(214, 178, 130, 0.5);
+  border-radius: 8px 8px 10px 10px;
+  pointer-events: none;
+}
+
+/* slides up and out, the way you'd actually pull a page from a folder */
+a:hover .folder .resume-doc {
+  transform: translateX(-50%) translateY(-34px) rotate(-2.5deg);
+  box-shadow: 0 18px 36px rgba(60, 22, 5, 0.26);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
