@@ -4,7 +4,7 @@ import { CasePage, NextFooter } from '../components/case.jsx'
 import { Stagger, Up, item } from '../components/motion.jsx'
 
 const IMG = '/assets/images/vrusabilitystudy'
-const PINK = '#ffddfb'
+const PINK = '#FDDDE6'
 
 /* Shared type + spacing tokens (Inter only) — consistent with the other case studies */
 const H2 = 'text-[1.75rem] leading-[1.3] font-medium! text-[#33333f] md:text-[2rem]'
@@ -80,7 +80,7 @@ export default function VrUsabilityStudy() {
               <span className="h-px flex-1 bg-[#e4e4e9]" />
             </Up>
             <Stagger as="div" className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-6">
-              <Up className={`${CARD} sm:col-span-2`} style={{ backgroundColor: '#f9dbef' }}>
+              <Up className={`${CARD} sm:col-span-2`} style={{ backgroundColor: '#FDDDE6' }}>
                 <p className={CARDTEXT}>
                   Conducted a moderated usability study of Wander VR on Meta Quest 3 with 3 participants
                 </p>

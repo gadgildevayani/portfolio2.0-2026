@@ -91,11 +91,12 @@ const PROJECTS = [
       ],
     },
     theme: {
-      bg: '#efd1dd',
-      fg: '#46303b',
-      sub: '#7c5f6a',
-      tagText: '#5d4651',
-      tagBorder: 'rgba(70, 48, 59, 0.26)',
+      bg: '#ec6691',
+      fg: '#ffffff',
+      sub: 'rgba(255, 255, 255, 0.9)',
+      tagText: '#ffffff',
+      tagBorder: 'rgba(255, 255, 255, 0.5)',
+      frameBg: 'transparent',
     },
   },
   {
