@@ -269,8 +269,7 @@ export default function HirelloOnboarding() {
           />
           <p>
             The product vision was for Hiro to use this information to create personalized
-            job-search tasks. AI task generation shipped separately, but onboarding responses were
-            not integrated into that functionality.
+            job-search tasks.
           </p>
         </CaseSection>
 
