@@ -1,55 +1,53 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------------
-   Bento portfolio — warm paper, confident color, Inter everywhere.
+   Tokens
 --------------------------------------------------------------------------- */
 :root {
-  --bg: #ffffff;
-  --ink: #1b1a17;
-  --muted: #74716a;
+  --ink: #04111f;
+  --ink-87: rgba(4, 17, 31, 0.87);
+  --muted: #717880;
+  --nav-muted: #5b5f63;
+  --accent: #4513eb; /* case-study labels (Tabfolio's purple) */
+  --case-surface: #efedf5; /* purple-grey panel behind case-study images */
+  --faint: #9a9ea5; /* labels in the case-study rail */
+  --surface: #f0f1f3;
+  --surface-hover: #e8eaed;
+  --nav-track: rgba(218, 218, 230, 0.5);
+  --white: #ffffff;
+  --bg: #fafafa;
 
-  --card-yellow: #f7ce5b;
-  --card-yellow-ink: #4a3a08;
-  --card-sage: #c5cf8e;
-  --card-sage-ink: #2c4a2e;
-  --marker: #e9fa6d;
-  --card-blue: #0a66c2;
-  --card-neutral: #e8e6e0;
-  --card-coral: #ee7d50;
-  --card-coral-ink: #5b220c;
-  --card-lavender: #c8b9f1;
-  --card-lavender-ink: #3c2d6e;
-
-  --accent: #236626;
-  --accent-soft: #e7efe8;
-
-  --r-card: 26px;
-  --r-inner: 16px;
-
-  --shadow-card: 0 1px 2px rgba(27, 26, 23, 0.04);
-  --shadow-lift: 0 14px 32px rgba(27, 26, 23, 0.1);
+  --container: 1152px; /* Tabfolio's content width; 40px gutters below it */
+  --gutter: 40px;
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  /* slight overshoot — the button reveal settles like a soft spring */
+  --ease-spring: cubic-bezier(0.3, 1.35, 0.5, 1);
 }
 
+/* ---------------------------------------------------------------------------
+   Base (case-study pages still render in Inter; the homepage uses Manrope)
+--------------------------------------------------------------------------- */
 html {
   scroll-behavior: smooth;
+  /* short tabs (About) drop the scrollbar; reserve its space so the centred
+     column doesn't jump sideways between tabs */
+  scrollbar-gutter: stable;
 }
 
 body {
-  background: var(--bg);
+  background: var(--white);
   color: var(--ink);
   font-family: "Inter", sans-serif;
   font-size: 16px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
 }
 
-::selection {
-  background: var(--marker);
-  color: var(--ink);
+/* homepage overscroll matches the page; case studies keep white */
+body:has(.site) {
+  background: var(--bg);
 }
 
 a {
@@ -57,287 +55,2466 @@ a {
   text-decoration: none;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 /* ---------------------------------------------------------------------------
-   Bento grid
+   Homepage shell
 --------------------------------------------------------------------------- */
-.bento {
-  display: grid;
-  gap: 18px;
-  grid-template-columns: 1fr;
-}
-
-/* Tablet — two columns */
-@media (min-width: 700px) {
-  .bento {
-    grid-template-columns: 1fr 1fr;
-    grid-template-areas:
-      "profile tagline"
-      "profile linkedin"
-      "profile beyond"
-      "resume scroll";
-  }
-  .area-profile { grid-area: profile; }
-  .area-tagline { grid-area: tagline; }
-  .area-linkedin { grid-area: linkedin; }
-  .area-beyond { grid-area: beyond; }
-  .area-resume { grid-area: resume; }
-  .area-scroll { grid-area: scroll; }
-}
-
-/* Desktop — the wireframe arrangement, filling the first viewport */
-@media (min-width: 1024px) {
-  .bento {
-    gap: 22px;
-    /* 24px above and below — bento sits dead-center in the first viewport */
-    height: calc(100vh - 48px);
-    min-height: 700px;
-    max-height: 1160px;
-    /* col 3 trimmed, col 4 widened: purple gets room, resume gives it up,
-       beyond-work (cols 3+4) stays the same width */
-    grid-template-columns: 1.18fr 0.92fr 0.34fr 0.62fr;
-    grid-template-rows: 1.06fr 1fr 1fr;
-    grid-template-areas:
-      "profile tagline tagline tagline"
-      "profile linkedin beyond beyond"
-      "profile resume resume scroll";
-  }
-}
-
-.card {
+.site {
   position: relative;
-  border-radius: var(--r-card);
-  box-shadow: var(--shadow-card);
-  overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  isolation: isolate;
+  min-height: 100vh;
+  overflow-x: clip;
+  background: var(--bg);
+  font-family: "Manrope", sans-serif;
+  color: var(--ink);
 }
 
-a.card:hover,
-.card-hover:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-lift);
+.site__header,
+.site__main {
+  width: min(var(--container), 100% - 2 * var(--gutter));
+  margin-inline: auto;
 }
 
-/* Project card reveal — CSS-driven so it plays exactly once (the latched
-   `is-in` class never comes off, so it can never replay on scroll-back). */
-.proj-card {
-  opacity: 0;
-  transform: translateY(16px) scale(0.96);
+/* Nav sits centred on the page, level with the portrait */
+.site__header {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.site__header > * {
+  pointer-events: auto;
+}
+
+.site__main {
+  position: relative;
+  z-index: 1;
+  padding-top: 40px;
+  padding-bottom: 80px;
+}
+
+/* ---------------------------------------------------------------------------
+   Aurora background (WebGL wave gradient). Same layering as Tabfolio's "Sky":
+   a 547px band across the top, faded by a vertical mask and a 30° mask so the
+   colour gathers toward the upper-right.
+--------------------------------------------------------------------------- */
+.aurora {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 547px;
+  z-index: -1;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(0deg, transparent 39%, #000 68%, #000 100%);
+  mask-image: linear-gradient(0deg, transparent 39%, #000 68%, #000 100%);
+}
+
+.aurora__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  -webkit-mask-image: linear-gradient(30deg, transparent 38%, #000 72%, #000 100%);
+  mask-image: linear-gradient(30deg, transparent 38%, #000 72%, #000 100%);
+}
+
+/* No WebGL2 — static stand-in with the same palette */
+.aurora--fallback {
+  background:
+    radial-gradient(45% 70% at 55% 0%, #d7a9eb 0%, transparent 70%),
+    radial-gradient(35% 60% at 100% 25%, #c0d8ed 0%, transparent 70%);
+}
+.aurora--fallback .aurora__canvas {
+  display: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Tab navigation
+--------------------------------------------------------------------------- */
+.tab-nav__list {
+  display: flex;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--nav-track);
+  border-radius: 20px;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.tab-nav__link {
+  position: relative;
+  display: block;
+  padding: 8px 12px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 21px;
+  color: var(--nav-muted);
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+.tab-nav__link:hover,
+.tab-nav__link.is-active {
+  color: var(--ink);
+}
+.tab-nav__link:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+}
+
+/* Inside a case study the Projects tab is a back link (Tabfolio's
+   "← Projects"): no pill; on hover the arrow nudges left, the label greys */
+.tab-nav__link.is-back {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ink);
+}
+.tab-nav__back-icon {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: var(--nav-muted);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.25s var(--ease-out);
+}
+.tab-nav__link.is-back:hover {
+  color: var(--nav-muted);
+}
+.tab-nav__link.is-back:hover .tab-nav__back-icon {
+  transform: translateX(-4px);
+}
+
+.tab-nav__pill {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: var(--white);
+  box-shadow: 0 1px 2px rgba(4, 17, 31, 0.04);
+}
+
+.tab-nav__label {
+  position: relative;
+}
+
+/* ---------------------------------------------------------------------------
+   Hero
+--------------------------------------------------------------------------- */
+.hero__portrait {
+  display: block;
+  width: 60px;
+  height: 60px;
+  border-radius: 17px; /* approximates the squircle where corner-shape is unsupported */
+  object-fit: cover;
+}
+
+.hero__name {
+  margin: 20px 0 0;
+  font-size: 36px;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.hero__tagline {
+  margin: 12px 0 0;
+  max-width: 365px; /* breaks after "and" */
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.45em;
+  color: var(--muted);
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* ---------------------------------------------------------------------------
+   Hero buttons — widen on hover to reveal an icon
+--------------------------------------------------------------------------- */
+.hero-btn {
+  --reveal-w: 21px;
+  --reveal-gap: 6px;
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 17px; /* 20px × Framer's 0.843 fallback when corner-shape is unsupported */
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 21px;
+  white-space: nowrap;
   transition:
-    opacity 0.6s var(--ease-out),
-    transform 0.6s var(--ease-out);
-  will-change: opacity, transform;
+    background-color 0.25s ease,
+    transform 0.2s var(--ease-out);
 }
-.proj-card.is-in {
+.hero-btn:active {
+  transform: scale(0.98);
+}
+.hero-btn:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.hero-btn--primary {
+  background: var(--ink);
+  color: var(--white);
+}
+.hero-btn--secondary {
+  --reveal-w: 26px;
+  --reveal-gap: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--surface-hover);
+}
+
+.hero-btn__reveal {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: 0;
+  height: 26px;
+  margin-left: 0;
+  transition:
+    width 0.45s var(--ease-spring),
+    margin-left 0.45s var(--ease-spring);
+}
+
+.hero-btn__icon {
+  flex-shrink: 0;
+  opacity: 0;
+  transition:
+    opacity 0.25s ease,
+    transform 0.5s var(--ease-spring);
+}
+
+/* Primary: white star spins in */
+.hero-btn--primary .hero-btn__icon {
+  width: 21px;
+  height: 21px;
+  background: currentColor;
+  -webkit-mask: var(--icon) center / contain no-repeat;
+  mask: var(--icon) center / contain no-repeat;
+  transform: rotate(-120deg) scale(0.3);
+}
+
+/* Secondary: dark chip with a white envelope pops in */
+.hero-btn--secondary .hero-btn__icon {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 11px;
+  background: var(--ink);
+  transform: scale(0.4);
+}
+.hero-btn--secondary .hero-btn__icon::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  background: var(--white);
+  -webkit-mask: var(--icon) center / contain no-repeat;
+  mask: var(--icon) center / contain no-repeat;
+}
+
+.hero-btn:focus-visible .hero-btn__reveal {
+  width: var(--reveal-w);
+  margin-left: var(--reveal-gap);
+}
+.hero-btn:focus-visible .hero-btn__icon {
   opacity: 1;
   transform: none;
 }
-@media (prefers-reduced-motion: reduce) {
-  .proj-card {
+
+@media (hover: hover) {
+  .hero-btn--primary:hover {
+    background: var(--ink-87);
+  }
+  .hero-btn--secondary:hover {
+    background: var(--surface-hover);
+  }
+  .hero-btn:hover .hero-btn__reveal {
+    width: var(--reveal-w);
+    margin-left: var(--reveal-gap);
+  }
+  .hero-btn:hover .hero-btn__icon {
+    opacity: 1;
     transform: none;
-    transition: opacity 0.3s ease;
   }
 }
 
-/* Highlighter stroke — a real marker sweep, not a tidy pill */
-.marker {
-  position: relative;
-  isolation: isolate; /* keep the highlight's z-index local, behind the text */
-  display: inline-block;
-  padding: 0 0.16em;
-  border-radius: 0;
-  transform: rotate(-0.4deg);
-}
-
-/* the highlight lives on a pseudo-element behind the text, so the text stays
-   fully visible while the swipe reveals */
-.marker::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: var(--marker);
-  transform-origin: left center;
-}
-
-/* first-load only: soft left→right marker swipe, timed to begin just after the
-   hanging badge's swing fully settles (~3.7s in). Runs once, no loop. */
-.marker-reveal::before {
-  animation: marker-reveal 1s cubic-bezier(0.22, 1, 0.36, 1) 3.8s both;
-}
-
-@keyframes marker-reveal {
-  from {
-    transform: scaleX(0);
+/* Framer-style squircle corners where the browser supports corner-shape */
+@supports (corner-shape: superellipse(1.3)) {
+  .hero__portrait {
+    border-radius: 55px;
+    corner-shape: superellipse(1.6);
   }
-  to {
-    transform: scaleX(1);
+  .hero-btn {
+    border-radius: 20px;
+    corner-shape: superellipse(1.3);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* reduced motion: highlight is simply present, no swipe */
-  .marker-reveal::before {
-    animation: none;
+  .hero-btn,
+  .hero-btn__reveal,
+  .hero-btn__icon {
+    transition-duration: 0.01ms;
   }
-}
-
-/* External-link arrow chip */
-.arrow-chip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  transition: transform 0.2s ease, background 0.2s ease;
-}
-
-a:hover .arrow-chip {
-  transform: translate(2px, -2px);
-}
-
-/* Mini resume document */
-.resume-doc {
-  background: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 10px 24px rgba(60, 22, 5, 0.22);
-  padding: 16px 18px;
-  width: 240px;
-  color: #2a2723;
-  transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out);
-  will-change: transform;
-}
-
-.resume-doc h4 {
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-}
-
-.resume-doc .doc-meta {
-  font-size: 5.5px;
-  color: #6c675f;
-  margin-top: 2px;
-}
-
-.resume-doc .doc-h {
-  font-size: 6px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  margin-top: 7px;
-  border-bottom: 0.5px solid #d8d4cc;
-  padding-bottom: 2px;
-}
-
-.resume-doc .doc-line {
-  font-size: 5.5px;
-  line-height: 1.5;
-  margin-top: 3px;
-  color: #4a463f;
-}
-
-@media (min-width: 1024px) {
-  .resume-doc {
-    width: 272px;
-  }
-  .resume-doc h4 { font-size: 10px; }
-  .resume-doc .doc-meta { font-size: 6px; }
-  .resume-doc .doc-h { font-size: 6.5px; }
-  .resume-doc .doc-line { font-size: 6px; }
 }
 
 /* ---------------------------------------------------------------------------
-   Manila folder — the resume lives inside it and slides out on hover
+   Tab panels
 --------------------------------------------------------------------------- */
-.folder {
-  position: relative;
-  width: 272px;
-  height: 100%;
-  min-height: 192px;
-  flex-shrink: 0;
+.tab-panel {
+  margin-top: 60px;
 }
 
-@media (min-width: 1024px) {
-  .folder {
-    width: 308px;
+/* Projects — sizes and hover measured from Tabfolio */
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 56px 24px; /* extra row space so each caption reads with its own card */
+}
+
+.project-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+a.project-card:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+  border-radius: 22px;
+}
+
+/* Gradient box — clips the zoom layer to its 20px corners */
+.project-card__media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 20px;
+  background: var(--surface);
+  overflow: hidden;
+  isolation: isolate; /* keeps the rounded clip while the child scales (Safari) */
+}
+
+/* Gradient + preview; scales to 1.02 on hover (Tabfolio: spring, 0.7s, no bounce) */
+.project-card__zoom {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: center / cover no-repeat;
+  transition: transform 0.7s var(--ease-out);
+}
+
+/* Preview inset on the gradient: 4px frame, black at 8% */
+.project-card__frame {
+  width: 90%;
+  aspect-ratio: 4 / 3;
+  border: 4px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.project-card__preview {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 6px; /* 10px outer radius minus the 4px frame */
+  object-fit: cover;
+  object-position: top center;
+}
+
+/* Caption: subtitle above a 20px title. On hover (Tabfolio's interaction) a
+   small pill un-blurs in and the title slides 17px right */
+.project-card__caption {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.project-card__eyebrow {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+  color: var(--muted);
+}
+
+.project-card__title {
+  position: relative;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--ink);
+  transition: transform 0.7s var(--ease-out);
+}
+.project-card__title::before {
+  content: "";
+  position: absolute;
+  top: 0.65em; /* centre of the first line */
+  left: -12px;
+  width: 7px;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 47px;
+  background: var(--ink);
+  opacity: 0;
+  filter: blur(5px);
+  transform: scale(0.4);
+  transition:
+    opacity 0.3s ease,
+    filter 0.7s var(--ease-out),
+    transform 0.7s var(--ease-out);
+}
+
+@media (hover: hover) {
+  .project-card:hover .project-card__zoom {
+    transform: scale(1.02);
+  }
+  .project-card:hover .project-card__title {
+    transform: translateX(17px);
+  }
+  .project-card:hover .project-card__title::before {
+    opacity: 1;
+    filter: none;
+    transform: none;
   }
 }
-
-/* leather grain — soft-light noise over the brown so it reads as hide, not plastic */
-.folder-back,
-.folder-front {
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='l'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23l)' opacity='0.5'/%3E%3C/svg%3E");
-  background-size: 160px 160px;
-  background-blend-mode: soft-light;
+a.project-card:focus-visible .project-card__title {
+  transform: translateX(17px);
 }
-
-/* back wall of the folder, with the classic tab */
-.folder-back {
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 118px;
-  background-color: #3e2a1c;
-  border-radius: 12px 12px 14px 14px;
+a.project-card:focus-visible .project-card__zoom {
+  transform: scale(1.02);
 }
-
-.folder-back::before {
-  content: "";
-  position: absolute;
-  top: -16px;
-  left: 16px;
-  width: 96px;
-  height: 20px;
-  background: #3e2a1c;
-  border-radius: 8px 8px 0 0;
-}
-
-/* the paper, tucked in */
-.folder .resume-doc {
-  position: absolute;
-  bottom: 22px;
-  left: 50%;
-  transform: translateX(-50%) rotate(1.2deg);
-  box-shadow: 0 6px 16px rgba(60, 22, 5, 0.18);
-}
-
-/* front pocket — covers the lower part of the paper */
-.folder-front {
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 100px;
-  background-color: #54392a;
-  background-image:
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='l'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23l)' opacity='0.5'/%3E%3C/svg%3E"),
-    linear-gradient(180deg, #5e4130 0%, #462e1f 100%);
-  border-radius: 12px 12px 14px 14px;
-  box-shadow:
-    0 -4px 12px rgba(34, 18, 8, 0.3),
-    inset 0 1px 0 rgba(255, 235, 205, 0.12);
-}
-
-/* stitching along the pocket edge */
-.folder-front::after {
-  content: "";
-  position: absolute;
-  inset: 7px;
-  border: 1.5px dashed rgba(214, 178, 130, 0.5);
-  border-radius: 8px 8px 10px 10px;
-  pointer-events: none;
-}
-
-/* slides up and out, the way you'd actually pull a page from a folder */
-a:hover .folder .resume-doc {
-  transform: translateX(-50%) translateY(-34px) rotate(-2.5deg);
-  box-shadow: 0 18px 36px rgba(60, 22, 5, 0.26);
+a.project-card:focus-visible .project-card__title::before {
+  opacity: 1;
+  filter: none;
+  transform: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+  .project-card__zoom,
+  .project-card__title,
+  .project-card__title::before {
+    transition-duration: 0.01ms;
+  }
+}
+
+/* About / Resume placeholders */
+/* About tab (Tabfolio's about page): carousel left, intro copy right */
+.about {
+  display: grid;
+  grid-template-columns: minmax(0, 484fr) minmax(0, 628fr);
+  gap: 40px;
+  align-items: start;
+}
+
+.about__heading {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--ink);
+}
+.about__heading-muted {
+  color: var(--muted);
+}
+
+.about__body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 40px;
+}
+.about__body p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* Photo carousel */
+.carousel {
+  margin: 0;
+}
+
+.carousel__frame {
+  position: relative;
+  aspect-ratio: 484 / 526;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.carousel__img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.carousel__dots {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 0.2);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  transform: translateX(-50%);
+}
+
+.carousel__dot-btn {
+  position: relative;
+  display: flex;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+/* bigger tap target than the 10px dot */
+.carousel__dot-btn::before {
+  content: "";
+  position: absolute;
+  inset: -6px -3px;
+}
+.carousel__dot-btn:focus-visible {
+  outline: 2px solid var(--white);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.carousel__dot {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background: rgb(233 233 240 / 0.5);
+  transition: background-color 0.2s ease;
+}
+.carousel__dot.is-active {
+  background: var(--bg);
+}
+
+.carousel__caption {
+  display: grid;
+  justify-items: center;
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.carousel__caption-text {
+  grid-area: 1 / 1; /* outgoing and incoming captions share the cell */
+}
+
+
+
+
+.text-link {
+  display: inline-block;
+  margin-top: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: rgba(4, 17, 31, 0.25);
+  text-underline-offset: 4px;
+  transition: text-decoration-color 0.2s ease;
+}
+.text-link:hover {
+  text-decoration-color: var(--ink);
+}
+.text-link:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ---------------------------------------------------------------------------
+   Footer (measured from Tabfolio: divider, 560px intro column + two link
+   columns, 80px / 120px vertical padding)
+--------------------------------------------------------------------------- */
+.footer {
+  position: relative;
+  z-index: 1;
+  width: min(var(--container), 100% - 2 * var(--gutter));
+  margin-inline: auto;
+  padding: 80px 0 120px;
+  border-top: 1px solid var(--surface-hover);
+}
+
+.footer__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 560px) minmax(140px, 1fr) minmax(140px, 1fr);
+  gap: 32px;
+}
+
+.footer__id {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer__photo {
+  width: 31px;
+  height: 31px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.footer__name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.footer__tagline {
+  margin: 12px 0 0;
+  max-width: 550px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.footer__heading {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 14px;
+  color: var(--ink);
+}
+
+.footer__list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 17px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.footer__list > li {
+  display: flex; /* rows sized by the 20px link, not the body line-height */
+}
+
+.footer__link {
+  position: relative;
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--nav-muted);
+  transition: color 0.2s ease;
+}
+.footer__link:hover {
+  color: var(--ink);
+}
+.footer__link:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* "Copied!" pill pops over the email address */
+.footer__copied {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  padding: 4px 12px;
+  border-radius: 50px;
+  background: #4513eb;
+  color: #fafafa;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.85);
+  transition:
+    opacity 0.2s ease,
+    transform 0.35s var(--ease-spring);
+}
+.footer__copied.is-visible {
+  opacity: 1;
+  transform: translate(-50%, -50%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer__copied {
+    transition-duration: 0.01ms;
+  }
+}
+
+/* Flower band under the footer: full-bleed, grows in on scroll (footerFlowers.js).
+   Its empty top overlaps the footer's bottom padding so the stems start close
+   below the links. */
+.footer-garden {
+  position: relative;
+  /* keep the 1440x600 drawing's proportions past 1440px wide so the tallest
+     flowers aren't sliced off the top; the overlap scales with it */
+  height: max(600px, 41.667vw);
+  margin-top: min(-120px, -8.333vw);
+  overflow: hidden;
+  pointer-events: none;
+}
+.footer-garden__svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------------------------------------------------------------------------
+   Case studies (Tabfolio's case-study type and spacing: hero 160px below the
+   top, sections 80px apart with a hairline between them)
+--------------------------------------------------------------------------- */
+.site__main--case {
+  padding-top: 160px;
+}
+
+/* Same width and side margins as the homepage (the .site__main container) */
+.case {
+  width: 100%;
+}
+/* Dashboard case study: grey-blue panels instead of purple-grey */
+/* Wander VR case study: soft pink panels and notes */
+.case--rose {
+  --case-surface: #f8ecf1;
+  --sketch-accent: #c2416f;
+  --sketch-accent-rgb: 194, 65, 111;
+}
+.case--slate {
+  --case-surface: #f1f4f8;
+  --sketch-accent: #2f64c8;
+  --sketch-accent-rgb: 47, 100, 200;
+}
+
+.case-hero__eyebrow {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.case-hero__title {
+  margin: 10px 0 0;
+  font-size: 40px;
+  font-weight: 500;
+  line-height: 1.1;
+  color: var(--ink);
+  text-wrap: pretty; /* fill the first line, but no one-word last line */
+}
+
+.case-hero__tldr {
+  margin-top: 40px;
+}
+.case-hero__tldr-label {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--accent);
+}
+.case-hero__tldr-text {
+  margin: 4px 0 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* Hero media: gradient panel with the preview framed in it (card style) */
+.case-media {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  margin-top: 40px;
+  overflow: hidden;
+  border-radius: 20px;
+  background: var(--surface) center / cover no-repeat;
+}
+.case-media__frame {
+  width: 90%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border: 4px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+}
+.case-media__preview {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  object-fit: cover;
+  object-position: top center;
+}
+
+/* Hero media at its own proportions: the gradient panel wraps it */
+.case-media--fit {
+  aspect-ratio: auto;
+  padding: 5%;
+}
+.case-media--fit .case-media__frame {
+  width: 100%;
+  aspect-ratio: auto;
+}
+.case-media--fit .case-media__preview {
+  height: auto;
+}
+
+/* Body: sticky section nav on the left, sections on the right */
+.case-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 40px;
+}
+
+.case-body__rail {
+  padding-top: 80px;
+}
+
+/* The whole rail stays in view; on short screens it scrolls on its own */
+.case-body__sticky {
+  position: sticky;
+  top: 40px;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.case-body__sticky::-webkit-scrollbar {
+  display: none;
+}
+
+/* Rail: project details, a hairline, then the "On this page" nav (sticky) */
+.case-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  max-width: 240px;
+  margin: 0;
+}
+.case-meta__item dt {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--faint);
+}
+.case-meta__item dd {
+  margin: 4px 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.case-tools {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+  padding: 4px 0 0;
+  list-style: none;
+}
+.case-tools__item {
+  display: grid;
+  place-items: center;
+  width: 45px;
+  height: 45px;
+  border: 1px solid var(--surface-hover);
+  border-radius: 10px;
+  background: var(--white);
+}
+.case-tools__item img {
+  display: block;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.case-nav {
+  margin-top: 46px;
+  padding-top: 43px;
+  border-top: 1px solid var(--surface-hover);
+}
+.case-nav__heading {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--faint);
+}
+.case-nav__list {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.case-nav__list > li {
+  display: flex;
+}
+
+/* Same hover as the project titles: a dash un-blurs in and the label slides
+   17px right. Also marks the section being read. */
+.case-nav__link {
+  position: relative;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--muted);
+  transition:
+    color 0.2s ease,
+    transform 0.7s var(--ease-out);
+}
+.case-nav__link::before {
+  content: "";
+  position: absolute;
+  top: 0.725em;
+  left: -12px;
+  width: 7px;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 47px;
+  background: var(--ink);
+  opacity: 0;
+  filter: blur(5px);
+  transform: scale(0.4);
+  transition:
+    opacity 0.3s ease,
+    filter 0.7s var(--ease-out),
+    transform 0.7s var(--ease-out);
+}
+.case-nav__link.is-active,
+.case-nav__link:focus-visible {
+  color: var(--ink);
+  transform: translateX(17px);
+}
+.case-nav__link.is-active::before,
+.case-nav__link:focus-visible::before {
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
+@media (hover: hover) {
+  .case-nav__link:hover {
+    color: var(--ink);
+    transform: translateX(17px);
+  }
+  .case-nav__link:hover::before {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}
+.case-nav__link:focus-visible {
+  outline: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case-nav__link,
+  .case-nav__link::before {
+    transition-duration: 0.01ms;
+  }
+}
+
+.case-section {
+  padding-top: 80px;
+  scroll-margin-top: -40px; /* nav jumps land with the label near the top */
+}
+.case-section + .case-section {
+  margin-top: 80px;
+  border-top: 1px solid var(--surface-hover);
+}
+
+.case-section__label {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--accent);
+}
+
+.case-section__title {
+  margin: 11px 0 0;
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+.case-section__text {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 20px;
+}
+.case-section__text > p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* Sub-heading inside a section (Tabfolio's 20px h3), and bold-led points */
+.case-section__subtitle {
+  margin: 20px 0 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink);
+}
+.case-points {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.case-points strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* Flow diagram: steps joined by arrows */
+.flow {
+  margin: 20px 0 0;
+  padding: 28px 20px;
+  border-radius: 20px;
+  background: var(--case-surface);
+}
+.flow__list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.flow__step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.flow__step + .flow__step::before {
+  content: "→";
+  position: absolute;
+  top: 26px;
+  left: -16px;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--muted);
+  transform: translate(-50%, -50%);
+}
+.flow__icon {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.flow__title {
+  margin: 10px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.flow__note {
+  margin: 2px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+/* Two-column mapping table in the purple-grey panel */
+.mapping {
+  margin-top: 4px;
+  padding: 8px 24px;
+  border-radius: 20px;
+  background: var(--case-surface);
+}
+.mapping__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+  line-height: 1.45;
+  text-align: left;
+}
+.mapping__table th,
+.mapping__table td {
+  padding: 14px 0;
+  vertical-align: top;
+}
+.mapping__table tr + tr > * {
+  border-top: 1px solid rgba(69, 19, 235, 0.08);
+}
+.mapping__table thead th {
+  padding-top: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.mapping__table tbody th {
+  width: 42%;
+  padding-right: 24px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.mapping__table td {
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* Image with a sticky note over its right edge */
+.note-figure {
+  position: relative;
+  margin: 20px 0 0;
+  padding: 16px 0;
+}
+/* Purple-grey panel around case-study images (Tabfolio frames its images in
+   a light grey panel) */
+.case-frame {
+  padding: 6%;
+  border-radius: 20px;
+  background: var(--case-surface);
+}
+.case-frame__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+
+.case-figure {
+  margin: 20px 0 0;
+}
+
+.note-figure__frame {
+  width: 78%;
+}
+
+/* Sticky note: tilted (--tilt), with the bottom edge lifting off the page.
+   Pastel purple shades via --note-from / --note-to. */
+.sticky-note {
+  --tilt: -17deg;
+  --note-from: #e9e0fb;
+  --note-to: #ddd0f7;
+  position: relative;
+  container-type: inline-size; /* note text scales with the note */
+  transform: rotate(var(--tilt));
+}
+.sticky-note--lavender {
+  --note-from: #e9e0fb;
+  --note-to: #ddd0f7;
+}
+.sticky-note--lilac {
+  --note-from: #f2e1f8;
+  --note-to: #e7cff2;
+}
+.sticky-note--periwinkle {
+  --note-from: #e3e3fc;
+  --note-to: #d3d4f6;
+}
+/* Blue tones (Dashboard case study) */
+.sticky-note--sky {
+  --note-from: #e1edfb;
+  --note-to: #d0e2f7;
+}
+.sticky-note--powder {
+  --note-from: #e4eaf4;
+  --note-to: #d5deec;
+}
+.sticky-note--cornflower {
+  --note-from: #dbe5fb;
+  --note-to: #c9d7f5;
+}
+/* Pink tones (Wander VR case study) */
+.sticky-note--blush {
+  --note-from: #fbe3ec;
+  --note-to: #f6d0de;
+}
+.sticky-note--rosewater {
+  --note-from: #fde8ee;
+  --note-to: #f9d9e3;
+}
+.sticky-note--petal {
+  --note-from: #f9dde8;
+  --note-to: #f2c8d8;
+}
+.sticky-note--aqua {
+  --note-from: #ddf0f8;
+  --note-to: #c8e5f1;
+}
+/* lifted-corner shadow, kept behind the paper */
+.sticky-note::before {
+  content: "";
+  position: absolute;
+  left: 4%;
+  right: 10%;
+  bottom: 5%;
+  height: 40%;
+  box-shadow: -4px 14px 16px rgba(4, 17, 31, 0.2);
+  transform: rotate(-3deg);
+}
+.sticky-note__paper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  padding: 14% 12%;
+  background: linear-gradient(170deg, var(--note-from) 0%, var(--note-to) 100%);
+  box-shadow: 0 1px 2px rgba(4, 17, 31, 0.08);
+  font-family: "Just Me Again Down Here", "Comic Sans MS", cursive;
+  font-size: 12cqi; /* ~24px on a 200px note; this face runs small */
+  font-weight: 400;
+  line-height: 1.35;
+  color: #1d1830;
+}
+.sticky-note__title {
+  display: block;
+  margin-bottom: 0.2em;
+}
+
+/* Over the image's right edge */
+.note-figure .sticky-note {
+  position: absolute;
+  top: 14%;
+  left: 68%;
+  width: min(34%, 220px);
+  aspect-ratio: 1;
+}
+
+/* Image with a row of notes underneath */
+.notes-below {
+  margin: 20px 0 0;
+}
+.notes-below__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6%;
+  padding: 24px 4% 32px;
+}
+.notes-below__row .sticky-note {
+  width: min(44%, 260px);
+  aspect-ratio: 1.15;
+}
+.notes-below__row .sticky-note:first-child {
+  margin-top: 28px;
+}
+.notes-below__row .sticky-note:only-child {
+  margin-top: 0;
+}
+.notes-below--overlap .notes-below__row {
+  position: relative;
+  z-index: 1;
+  margin-top: -36px;
+  padding-top: 0;
+}
+/* a single overlapping note sits a little left of centre */
+.notes-below--overlap .notes-below__row .sticky-note:only-child {
+  width: min(62%, 320px);
+  aspect-ratio: 1.5;
+  margin-right: 24%;
+}
+.notes-below--overlap .notes-below__row .sticky-note:only-child .sticky-note__paper {
+  padding: 8% 9%;
+  font-size: 7cqi;
+}
+.notes-below__row .sticky-note__paper {
+  justify-content: flex-start;
+  padding: 11% 10%;
+  font-size: 9cqi;
+}
+
+/* Side-by-side comparison cards (purple-grey panels) */
+.compare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+.compare__card {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 24px;
+  border-radius: 20px;
+  background: var(--case-surface);
+}
+.compare__card--white {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(17, 20, 24, 0.06);
+}
+.compare__eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.compare__title {
+  margin: 4px 0 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.compare__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-top: 20px;
+}
+/* Cropped UI screenshot inside a comparison card */
+.compare__shot {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: 560px;
+  max-height: 120vw;
+  margin: 0 auto;
+  border-radius: 12px;
+  object-fit: contain;
+}
+/* screenshot cards: trimmer padding so the panels can run larger */
+.compare__card:has(.compare__shot) {
+  padding: 20px 16px 16px;
+}
+.compare__card:has(.compare__shot) .compare__body {
+  justify-content: flex-start;
+}
+/* Highlighted research question */
+.case-question {
+  margin: 4px 0 0;
+  padding: 20px 24px;
+  border-left: 3px solid var(--sketch-accent, var(--accent));
+  border-radius: 0 16px 16px 0;
+  background: var(--case-surface);
+}
+.case-question__label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sketch-accent, var(--accent));
+}
+.case-question__text {
+  margin: 6px 0 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+/* Study setup: label / value rows split by hairlines */
+.case-specs {
+  margin: 0;
+  border-top: 1px solid rgba(var(--sketch-accent-rgb, 69, 19, 235), 0.12);
+}
+.case-specs > div {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(var(--sketch-accent-rgb, 69, 19, 235), 0.12);
+  font-size: 16px;
+  line-height: 1.45;
+}
+.case-specs dt {
+  font-weight: 600;
+  color: var(--muted);
+}
+.case-specs dd {
+  margin: 0;
+  font-weight: 500;
+  color: var(--ink);
+}
+@media (max-width: 700px) {
+  .case-specs > div {
+    grid-template-columns: 110px minmax(0, 1fr);
+    gap: 12px;
+  }
+}
+/* Headline numbers */
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.stat-cards__card {
+  padding: 24px;
+  border: 1px solid rgba(17, 20, 24, 0.08);
+  border-radius: 20px;
+  background: #fff;
+}
+.stat-cards__card p {
+  margin: 0;
+}
+.stat-cards__value {
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.stat-cards__label {
+  margin-top: 6px !important;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.stat-cards__text {
+  margin-top: 12px !important;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--muted);
+}
+/* Numbered findings, each with an optional participant quote */
+.finding-cards {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid rgba(17, 20, 24, 0.08);
+}
+.finding-cards li {
+  padding: 20px 0;
+  border-bottom: 1px solid rgba(17, 20, 24, 0.08);
+}
+.finding-cards p {
+  margin: 0;
+}
+.finding-cards__head {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.finding-cards__num {
+  margin-right: 6px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--sketch-accent, var(--accent));
+}
+.finding-cards__text {
+  margin-top: 6px !important;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.finding-cards__quote {
+  margin: 14px 0 0;
+  padding-left: 14px;
+  border-left: 2px solid var(--sketch-accent, var(--accent));
+  font-size: 15px;
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--ink);
+}
+@media (max-width: 700px) {
+  .stat-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* Portrait video centred in its panel */
+.case-frame--video {
+  display: flex;
+  justify-content: center;
+}
+.case-frame__video {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: 560px;
+  max-height: 120vw;
+  border-radius: 12px;
+  object-fit: cover;
+}
+/* Video with play / sound buttons over its bottom-right corner */
+.sound-video {
+  position: relative;
+  max-width: 100%;
+}
+.sound-video__controls {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sound-video__seek {
+  flex: 1;
+  min-width: 0;
+  height: 18px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.sound-video__seek::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(to right, #fff var(--progress), rgba(255, 255, 255, 0.4) var(--progress));
+}
+.sound-video__seek::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.4);
+}
+.sound-video__seek::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: #fff;
+}
+.sound-video__seek::-webkit-slider-thumb {
+  width: 12px;
+  height: 12px;
+  margin-top: -4px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(17, 20, 24, 0.35);
+  -webkit-appearance: none;
+}
+.sound-video__seek::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(17, 20, 24, 0.35);
+}
+.sound-video__seek:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.sound-video__controls button {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(17, 20, 24, 0.55);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.sound-video__controls button:hover {
+  background: rgba(17, 20, 24, 0.75);
+}
+.sound-video__controls button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+.sound-video__controls svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* Large participant quote */
+.case-pullquote {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  border-left: 3px solid var(--sketch-accent, var(--accent));
+  font-size: 20px;
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+/* Recommendations as compact numbered rows */
+.rec-groups__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid rgba(17, 20, 24, 0.08);
+}
+.rec-groups__list li {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 8px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(17, 20, 24, 0.08);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.rec-groups__num {
+  padding-top: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--sketch-accent, var(--accent));
+}
+.rec-groups__list strong {
+  display: block;
+  font-weight: 600;
+  color: var(--ink);
+}
+.rec-groups__text {
+  display: block;
+  margin-top: 2px;
+  font-weight: 500;
+  color: var(--muted);
+}
+/* Scattered polaroids on a tinted panel */
+.polaroids {
+  position: relative;
+  aspect-ratio: 16 / 11;
+  margin: 8px 0 0;
+  container-type: inline-size;
+}
+.polaroids__item {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  padding: 1.1cqi 1.1cqi 4.2cqi;
+  border-radius: 3px;
+  background: #fff;
+  box-shadow:
+    0 1px 2px rgba(17, 20, 24, 0.08),
+    0 8px 24px rgba(17, 20, 24, 0.12);
+  transform: rotate(var(--tilt));
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s ease;
+}
+.polaroids__item img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 1px;
+}
+.polaroids__item:hover {
+  z-index: 2;
+  transform: rotate(0deg) scale(1.04);
+  box-shadow:
+    0 2px 4px rgba(17, 20, 24, 0.08),
+    0 16px 36px rgba(17, 20, 24, 0.18);
+}
+@media (prefers-reduced-motion: reduce) {
+  .polaroids__item {
+    transition: none;
+  }
+}
+@media (max-width: 700px) {
+  .polaroids {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+    gap: 16px;
+    aspect-ratio: auto;
+    padding: 8px 4px;
+  }
+  .polaroids__item {
+    position: static;
+    width: auto;
+    padding: 6px 6px 22px;
+  }
+}
+/* Numbered task cards under a study photo */
+.task-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.task-cards li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  background: var(--case-surface);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.task-cards__num {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--sketch-accent, var(--accent));
+}
+.task-cards__tag {
+  margin-top: auto;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sketch-accent, var(--accent));
+  background: rgba(var(--sketch-accent-rgb, 69, 19, 235), 0.1);
+}
+@media (max-width: 700px) {
+  .task-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* small italic note under a comparison or figure */
+.media-note,
+.case-section__text > p.media-note {
+  margin: -8px 0 0;
+  font-size: 11px;
+  font-style: italic;
+  line-height: 1.45;
+  text-align: center;
+  color: var(--muted);
+}
+.compare__caption {
+  margin-top: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--muted);
+}
+/* Dashboard layout wireframe: Hiro's panel on one side, content blocks beside it */
+.layout-sketch {
+  display: grid;
+  grid-template-columns: 28% minmax(0, 1fr) 30%;
+  grid-template-rows: 14% 1fr 1fr;
+  gap: 8px;
+  aspect-ratio: 16 / 10;
+  padding: 10px;
+  border: 1.5px solid rgba(var(--sketch-accent-rgb, 69, 19, 235), 0.16);
+  border-radius: 14px;
+  background: #fff;
+}
+.layout-sketch > span {
+  border-radius: 6px;
+  background: #ebe9f1;
+}
+.layout-sketch__hiro {
+  grid-row: 1 / -1;
+  display: flex;
+  align-items: flex-start;
+  padding: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--sketch-accent, var(--accent));
+  background: rgba(var(--sketch-accent-rgb, 69, 19, 235), 0.14) !important;
+}
+.layout-sketch__bar {
+  grid-column: span 2;
+}
+.layout-sketch__wide {
+  grid-column: span 2;
+}
+.layout-sketch--left .layout-sketch__hiro {
+  grid-column: 1;
+}
+.layout-sketch--right {
+  grid-template-columns: minmax(0, 1fr) 30% 28%;
+}
+.layout-sketch--right .layout-sketch__hiro {
+  grid-column: 3;
+}
+.layout-sketch--right .layout-sketch__bar,
+.layout-sketch--right .layout-sketch__wide {
+  grid-column: 1 / span 2;
+}
+/* Illustrative structured step (shipped approach) */
+.form-sketch__steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+.form-sketch__steps li {
+  padding: 7px 0;
+  border-radius: 8px;
+  background: var(--white);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  color: var(--muted);
+}
+.form-sketch__steps li.is-current {
+  background: #dcd2f7;
+  color: #2a1f52;
+}
+.form-sketch__label {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.form-sketch__input {
+  margin: 0 0 14px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--white);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.form-sketch__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.form-sketch__chips li {
+  padding: 7px 12px;
+  border-radius: 10px;
+  background: var(--white);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.form-sketch__chips li.is-selected {
+  background: #dcd2f7;
+  color: #2a1f52;
+}
+
+/* Illustrative chat: Hiro on the left, the user's replies on the right */
+.chat-sketch {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.chat-sketch__msg {
+  max-width: 85%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.chat-sketch__msg--hiro {
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+  background: var(--white);
+  color: var(--ink);
+}
+.chat-sketch__msg--user {
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+  background: #dcd2f7;
+  color: #2a1f52;
+}
+.chat-sketch__who {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* A single sticky note under the content */
+.note-solo {
+  padding: 28px 0 12px 3%;
+}
+.note-solo .sticky-note {
+  width: min(62%, 320px);
+  aspect-ratio: 1.35;
+}
+.note-solo--end {
+  display: flex;
+  justify-content: flex-end;
+  padding-inline: 0 3%;
+}
+.note-solo .sticky-note__paper {
+  padding: 8% 9%;
+  font-size: 7cqi;
+}
+
+/* Screenshot with callouts: dot on the element, line out to a label in the
+   panel's margin (extra top/bottom padding makes room for the labels) */
+.annotated {
+  margin: 20px 0 0;
+}
+.annotated__frame {
+  padding: 11% 6%;
+}
+.annotated__shot {
+  position: relative;
+}
+.annotated__lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.annotated__lines line {
+  stroke: var(--accent);
+  stroke-width: 1.5;
+}
+.annotated__lines circle {
+  fill: var(--accent);
+  stroke: var(--white);
+  stroke-width: 2;
+}
+
+.annotated__label {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px 5px 5px;
+  border-radius: 999px;
+  background: var(--white);
+  box-shadow: 0 2px 8px rgba(4, 17, 31, 0.08);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--ink);
+}
+.annotated__label--start {
+  transform: translate(0, -50%);
+}
+.annotated__label--center {
+  transform: translate(-50%, -50%);
+}
+.annotated__label--end {
+  transform: translate(-100%, -50%);
+}
+
+.annotated__label-num {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--white);
+}
+
+
+/* "Explore more" after a case study (Tabfolio): divider, 20px heading, small
+   project cards in three columns with just a title */
+.explore {
+  margin-top: 120px;
+  padding-top: 80px;
+  border-top: 1px solid var(--surface-hover);
+}
+.explore__heading {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink);
+}
+.explore__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+.project-card--compact .project-card__caption {
+  padding-left: 8px;
+}
+.project-card--compact .project-card__title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--muted);
+  transition:
+    color 0.2s ease,
+    transform 0.7s var(--ease-out);
+}
+@media (hover: hover) {
+  .project-card--compact:hover .project-card__title {
+    color: var(--ink);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Responsive
+--------------------------------------------------------------------------- */
+/* Tabfolio steps the About heading down at its tablet size */
+@media (max-width: 1199px) {
+  .about__heading {
+    font-size: 26px;
+  }
+}
+
+/* Tablet and below (Tabfolio's 810px breakpoint): one column, 20px gutters */
+@media (max-width: 809px) {
+  :root {
+    --gutter: 20px;
+  }
+
+  .project-grid {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 48px;
+  }
+
+  .footer__inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .about {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+
+  .about__heading {
+    font-size: 24px;
+  }
+
+  .carousel__frame {
+    aspect-ratio: 350 / 434;
+  }
+
+  .site__main--case {
+    padding-top: 120px;
+  }
+
+  .case-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .case-body__rail {
+    display: none;
+  }
+}
+
+/* Small screens: nav moves into the flow above the hero (Tabfolio's phone sizes) */
+@media (max-width: 640px) {
+  .site__header {
+    position: relative;
+    top: auto;
+    padding-top: 20px;
+  }
+
+  .site__main {
+    padding-top: 35px;
+    padding-bottom: 60px;
+  }
+
+  .footer {
+    padding: 60px 0 40px;
+  }
+
+  .footer-garden {
+    height: 560px;
+    margin-top: -180px;
+  }
+
+  .hero__portrait {
+    width: 52px;
+    height: 52px;
+  }
+
+  .hero__name {
+    font-size: 34px;
+  }
+
+  .tab-panel {
+    margin-top: 40px;
+  }
+
+  .site__main--case {
+    padding-top: 60px;
+  }
+
+  .case-hero__title {
+    font-size: 32px;
+  }
+  .case-hero__tldr {
+    margin-top: 28px;
+  }
+
+  .case-section {
+    padding-top: 60px;
+  }
+  .case-section + .case-section {
+    margin-top: 60px;
+  }
+
+  .case-section__title {
+    font-size: 24px;
+  }
+
+  .flow__list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .flow__step + .flow__step::before {
+    content: "↓";
+    top: -16px;
+    left: 50%;
+  }
+
+  /* Note too small beside the image: full-width image, note over its corner */
+  .note-figure {
+    padding-bottom: 46%;
+  }
+  .note-figure__frame {
+    width: 100%;
+  }
+  .note-figure .sticky-note {
+    top: auto;
+    bottom: 2%;
+    left: auto;
+    right: 0;
+    width: min(56%, 220px);
+  }
+
+  /* Notes stack, staggered left and right */
+  .notes-below__row {
+    flex-direction: column;
+    gap: 20px;
+    padding-inline: 0;
+  }
+  .notes-below__row .sticky-note {
+    width: min(66%, 240px);
+  }
+  .notes-below__row .sticky-note__paper {
+    font-size: 8.5cqi;
+  }
+  .notes-below__row .sticky-note:first-child {
+    margin-top: 0;
+  }
+  .notes-below__row .sticky-note:last-child {
+    align-self: flex-end;
+  }
+  .notes-below__row .sticky-note:only-child {
+    align-self: center;
+  }
+  .notes-below--overlap .notes-below__row {
+    margin-top: -24px;
+  }
+  .notes-below--overlap .notes-below__row .sticky-note:only-child {
+    width: min(86%, 300px);
+    margin-right: 0;
+  }
+
+  .compare {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .explore__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .note-solo .sticky-note {
+    width: min(86%, 300px);
+  }
+
+  /* Smaller callout labels on the narrow screenshot */
+  .annotated__frame {
+    padding: 15% 5%;
+  }
+  .annotated__label {
+    gap: 4px;
+    padding: 3px 7px 3px 3px;
+    font-size: 10px;
+  }
+  .annotated__label-num {
+    width: 14px;
+    height: 14px;
+    font-size: 9px;
+  }
+  .annotated__lines circle {
+    r: 3px;
+    stroke-width: 1.5;
+  }
+  .annotated__lines line {
+    stroke-width: 1;
+  }
+}
+
+/* ---------- Resume tab (Tabfolio layout) ---------- */
+.resume__section {
+  padding: 64px 0;
+  border-top: 1px solid var(--hairline, rgba(17, 20, 24, 0.08));
+}
+.resume__section:first-child {
+  padding-top: 8px;
+  border-top: 0;
+}
+.resume__heading {
+  margin: 0 0 32px;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--ink);
+}
+.resume__heading span {
+  color: var(--muted);
+}
+.resume__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 8px;
+  margin: 4px 0 0;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.resume__meta span[aria-hidden] {
+  color: var(--faint);
+}
+
+/* Experience */
+.resume-jobs {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.resume-jobs__item {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 20px;
+  padding: 24px 0;
+  border-bottom: 1px solid rgba(17, 20, 24, 0.08);
+}
+.resume-jobs__item:first-child {
+  padding-top: 0;
+}
+.resume-jobs__item:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+.resume-jobs__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ink);
+}
+.resume-jobs__at {
+  margin: 0 2px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.resume-jobs__summary {
+  max-width: 760px;
+  margin: 10px 0 0;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.resume-jobs__icon {
+  width: 24px;
+  height: 24px;
+  margin-top: 1px;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Tools */
+.resume-tools {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.resume-tools__item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px;
+  border-radius: 16px;
+  background: #f0f1f3;
+}
+.resume-tools__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(17, 20, 24, 0.06);
+}
+.resume-tools__icon img {
+  width: 24px;
+  height: 24px;
+}
+.resume-tools__name {
+  display: block;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink);
+}
+.resume-tools__item .resume__meta {
+  margin-top: 2px;
+}
+
+/* Skills */
+.resume-skills {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.resume-skills__title {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.resume-skills__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.resume-skills__chips li {
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--ink);
+  background: #f0f1f3;
+}
+
+/* Education */
+.resume-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.resume-rows li {
+  padding: 20px 0;
+  border-bottom: 1px solid rgba(17, 20, 24, 0.08);
+}
+.resume-rows li:first-child {
+  padding-top: 0;
+}
+.resume-rows__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ink);
+}
+.resume__pdf {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 28px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  background: var(--ink);
+  transition: opacity 0.2s ease;
+}
+.resume__pdf:hover {
+  opacity: 0.85;
+}
+.resume__pdf svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@media (max-width: 700px) {
+  .resume__section {
+    padding: 48px 0;
+  }
+  .resume-tools {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

@@ -7,8 +7,11 @@ import path from 'path'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
+    alias: [
+      { find: '@', replacement: path.resolve(__dirname, './src') },
+      // Framer-exported shader files import from "framer"; exact match only,
+      // so "framer-motion" is unaffected.
+      { find: /^framer$/, replacement: path.resolve(__dirname, './src/lib/framer-shim.js') },
+    ],
   },
 })

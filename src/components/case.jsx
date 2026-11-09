@@ -5,7 +5,7 @@ import '../casestudy.css'
 
 const LINKEDIN_URL = 'https://www.linkedin.com/in/devayanigadgil/'
 const RESUME_URL =
-  'https://drive.google.com/file/d/15c8sAwP7FUvn9Kxu87iALXVjyg96ToDo/view?usp=sharing'
+  'https://drive.google.com/file/d/1Oqvzi-TPwVeI0iCgSwk3mBoWpR1DGkjg/view?usp=sharing'
 
 /* Navigation — back button far left, page links far right (no About) */
 export function CaseNav() {
