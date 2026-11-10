@@ -14,7 +14,7 @@ export const TABS = [
   { label: 'Projects', path: '/' },
   { label: 'About', path: '/about' },
   { label: 'Resume', path: '/resume' },
-  { label: 'Linkedin', href: SITE.linkedinUrl }, // external: opens the profile
+  { label: 'LinkedIn', href: SITE.linkedinUrl }, // external: opens the profile
 ]
 
 // Homepage selected work. `href` stays null until each case study page exists.
